@@ -1,6 +1,35 @@
+const axios = require("axios").default;
 const Jimp = require("jimp");
+const pluralize = require("pluralize");
+const WordPOS = require("wordpos");
 
-const groupSubStrings = (subStrings, font, bgHeight, bgWidth) =>
+const getQuote = () =>
+  new Promise((resolve, reject) => {
+    const options = {
+      method: "POST",
+      url: "https://motivational-quotes1.p.rapidapi.com/motivation",
+      headers: {
+        "content-type": "application/json",
+        "x-rapidapi-host": "motivational-quotes1.p.rapidapi.com",
+        "x-rapidapi-key": "a32511e097msh8822beb67ddd703p13a629jsn287a7f0df201",
+      },
+      data: { key1: "value", key2: "value" },
+    };
+
+    axios
+      .request(options)
+      .then((res) => resolve(res.data))
+      .catch((err) => reject(err));
+  });
+
+const isValidQuote = (quote, nouns) => {
+  const wordpos = new WordPOS();
+  const includesNoun = nouns.length > 0;
+  const includesForbiddenChars = quote.includes("~") || quote.includes('"');
+  return includesNoun && !includesForbiddenChars;
+};
+
+const groupSubStrings = (subStrings, font, bgHeight, bgWidth, spaceWidth) =>
   new Promise((resolve, reject) => {
     (async () => {
       try {
@@ -19,10 +48,11 @@ const groupSubStrings = (subStrings, font, bgHeight, bgWidth) =>
           const columns = [];
 
           for (sub of subs) {
-            const columnWidth = await Jimp.measureText(font, sub);
+            const columnWidth =
+              (await Jimp.measureText(font, sub)) + spaceWidth;
             if (rowWidth + columnWidth < maxAllowedWidth) {
               columns.push({ content: sub, width: columnWidth });
-              rowWidth += await Jimp.measureText(font, sub);
+              rowWidth += columnWidth;
               continue;
             }
             if (columns.length === 0) {
@@ -70,22 +100,22 @@ const createImage = (text) =>
 
         const bg = await Jimp.read("images/bg.jpg");
         const logo = await Jimp.read("images/logo.jpg");
-        const font = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE);
+        const font = await Jimp.loadFont("./fonts/regular.fnt");
+        const spaceWidth = 20;
 
         const bgHeight = 1080;
         const bgWidth = 1080;
         const logoHeight = 120;
         const logoWidth = 120;
 
-        const subStrings = text.replaceAll(" ", " ~").split("~");
-
-        console.log(subStrings);
+        const subStrings = text.split(" ");
 
         const { rows, maxWidth, sumHeight } = await groupSubStrings(
           subStrings,
           font,
           bgHeight,
-          bgWidth
+          bgWidth,
+          spaceWidth
         );
 
         let marginTop = (bgHeight - sumHeight) / 2;
@@ -96,7 +126,7 @@ const createImage = (text) =>
             if (column.content.includes("penis")) {
               const penis = column.content.substring(0, 5); // bc penis is 5 chars long
               bg.print(
-                await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK),
+                await Jimp.loadFont("./fonts/regular.fnt"),
                 marginLeft,
                 marginTop,
                 penis
@@ -126,11 +156,36 @@ const createImage = (text) =>
 
 (async function () {
   try {
-    await createImage("I am a penis quote.");
-    // console.log(
-    //   await Jimp.measureText(await Jimp.loadFont(Jimp.FONT_SANS_14_BLACK), "s")
-    // );
-  } catch (e) {
-    console.error(e);
+    const wordpos = new WordPOS();
+
+    // Get qoute
+    let quoteArr;
+    let quote;
+    let author;
+    let nouns;
+    do {
+      quoteArr = (await getQuote()).split(/\r\n|\r|\n/);
+      quote = quoteArr[0].replaceAll('"', "");
+      author = quoteArr[1];
+      nouns = await wordpos.getNouns(quote);
+    } while (!isValidQuote(quote, nouns));
+
+    const lastNoun = nouns[nouns.length - 1];
+
+    // Replace last noun with penis lmao
+    const modifiedQuote = quote.replaceAll(
+      lastNoun,
+      lastNoun.split("")[0] === lastNoun.split("")[0].toLowerCase()
+        ? "penis"
+        : "Penis"
+    );
+
+    console.log(quote);
+    console.log(modifiedQuote);
+
+    // Creat Image
+    await createImage(modifiedQuote);
+  } catch (err) {
+    console.error(err);
   }
 })();

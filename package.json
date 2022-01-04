@@ -10,6 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jimp": "^0.16.1"
+    "axios": "^0.24.0",
+    "config": "^3.3.6",
+    "jimp": "^0.16.1",
+    "pluralize": "^8.0.0",
+    "wordpos": "^2.1.0"
   }
 }
