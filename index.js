@@ -101,6 +101,7 @@ const createImage = (text) =>
         const bg = await Jimp.read("images/bg.jpg");
         const logo = await Jimp.read("images/logo.jpg");
         const font = await Jimp.loadFont("./fonts/regular.fnt");
+        const penisFont = await Jimp.loadFont("./fonts/penis.fnt");
         const spaceWidth = 20;
 
         const bgHeight = 1080;
@@ -122,16 +123,27 @@ const createImage = (text) =>
         for (row of rows) {
           let marginLeft = (bgWidth - maxWidth) / 2;
           for (column of row.columns) {
-            bg.print(font, marginLeft, marginTop, column.content);
-            if (column.content.includes("penis")) {
+            if (
+              column.content.includes("penis") ||
+              column.content.includes("Penis")
+            ) {
               const penis = column.content.substring(0, 5); // bc penis is 5 chars long
-              bg.print(
-                await Jimp.loadFont("./fonts/regular.fnt"),
-                marginLeft,
-                marginTop,
-                penis
-              );
+              bg.print(penisFont, marginLeft, marginTop, penis);
+              const penisWidth = await Jimp.measureText(penisFont, penis);
+              marginLeft += penisWidth;
+              if (column.content.length > 5) {
+                bg.print(font, marginLeft, marginTop, column.content[5]);
+                const charWidth = await Jimp.measureText(
+                  font,
+                  column.content[5]
+                );
+                marginLeft += charWidth;
+              }
+              marginLeft += spaceWidth;
+              continue;
             }
+
+            bg.print(font, marginLeft, marginTop, column.content);
             marginLeft += column.width;
           }
           marginTop += row.height;
