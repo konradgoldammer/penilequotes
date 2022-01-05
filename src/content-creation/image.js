@@ -1,7 +1,11 @@
-const axios = require("axios").default;
-const Jimp = require("jimp");
-const pluralize = require("pluralize");
-const WordPOS = require("wordpos");
+import axios from "axios";
+import * as fs from "fs-extra";
+import Jimp from "jimp";
+import path from "path";
+import pluralize from "pluralize";
+import WordPOS from "wordpos";
+
+const __dirname = path.resolve();
 
 const generatePenileQuote = () =>
   new Promise((resolve, reject) => {
@@ -112,10 +116,16 @@ const createImage = (text) =>
 
         const outputPath = "output/edited.jpg";
 
-        const bg = await Jimp.read("images/bg.jpg");
-        const logo = await Jimp.read("images/logo.jpg");
-        const font = await Jimp.loadFont("./fonts/regular.fnt");
-        const penisFont = await Jimp.loadFont("./fonts/penis.fnt");
+        const bg = await Jimp.read(path.join(__dirname, "images", "bg.jpg"));
+        const logo = await Jimp.read(
+          path.join(__dirname, "images", "logo.jpg")
+        );
+        const font = await Jimp.loadFont(
+          path.join(__dirname, "fonts", "regular.fnt")
+        );
+        const penisFont = await Jimp.loadFont(
+          path.join(__dirname, "fonts", "penis.fnt")
+        );
         const spaceWidth = 20;
 
         const bgHeight = 1080;
@@ -147,7 +157,7 @@ const createImage = (text) =>
                   let rowWidth = 0;
                   const columns = [];
 
-                  for (sub of subs) {
+                  for (let sub of subs) {
                     const columnWidth =
                       (await Jimp.measureText(font, sub)) + spaceWidth;
                     if (rowWidth + columnWidth < maxAllowedWidth) {
@@ -201,9 +211,9 @@ const createImage = (text) =>
         }
 
         let marginTop = (bgHeight - sumHeight) / 2;
-        for (row of rows) {
+        for (let row of rows) {
           let marginLeft = (bgWidth - maxWidth) / 2;
-          for (column of row.columns) {
+          for (let column of row.columns) {
             if (
               column.content.includes("penis") ||
               column.content.includes("Penis")
@@ -249,7 +259,7 @@ const createImage = (text) =>
     })();
   });
 
-const generatePenileQuoteImage = () =>
+export const generatePenileQuoteImage = () =>
   new Promise((resolve, reject) => {
     (async () => {
       try {
@@ -268,5 +278,3 @@ const generatePenileQuoteImage = () =>
       }
     })();
   });
-
-module.exports = generatePenileQuote;
