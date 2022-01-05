@@ -1,12 +1,70 @@
 import config from "config";
 import { generatePenileQuoteImage } from "./content-creation/index.js";
+import Instagram from "instagram-web-api";
 import mongoose from "mongoose";
 
 (async () => {
-  console.log("Start...");
-  await mongoose.connect(config.get("mongoURI"));
-  console.log("Connected to MongoDB");
+  try {
+    while (true) {
+      const startTime = Date.now();
 
-  await generatePenileQuoteImage();
-  mongoose.connection.close();
+      console.log("Start...");
+
+      const client = new Instagram({
+        username: config.get("username"),
+        password: config.get("password"),
+      });
+
+      const authenticated = await client.login();
+
+      if (!authenticated) {
+        throw new Error("False credentials");
+      }
+
+      console.log(`Logged into Instagram as ${client.credentials.username}`);
+
+      await mongoose.connect(config.get("mongoURI"));
+      console.log("Connected to MongoDB");
+
+      const { outputPath, author } = await generatePenileQuoteImage();
+
+      await client.uploadPhoto({
+        photo: outputPath,
+        caption: `- ${author}`,
+        post: "feed",
+      });
+
+      console.log("Uploaded to Instagram");
+
+      const duration = Date.now() - startTime;
+
+      console.log(`Iteration complete in ${duration} secs`);
+
+      // Sleep
+      const sleepLength =
+        config.get("intervalLength") * 60 * 60 * 1000 - duration;
+      console.log(
+        `Sleeping until ${new Date(
+          Date.now() + sleepLength
+        ).toLocaleString()}...`
+      );
+      await sleep(sleepLength);
+    }
+  } catch (err) {
+    console.error(`Error: ${err}`);
+
+    mongoose.connection.close();
+
+    console.log(
+      `Sleeping until ${new Date(Date.now() + 2147483647).toLocaleString()}...`
+    );
+
+    await sleep(2147483647);
+
+    return;
+  }
 })();
+
+const sleep = (milliseconds) => {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+};

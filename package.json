@@ -8,12 +8,13 @@
     "start": "node ./src/index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Konrad Goldammer",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.24.0",
     "config": "^3.3.6",
     "fs-extra": "^10.0.0",
+    "instagram-web-api": "^2.2.2",
     "jimp": "^0.16.1",
     "mongoose": "^6.1.5",
     "path": "^0.12.7",

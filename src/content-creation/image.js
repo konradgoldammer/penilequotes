@@ -25,7 +25,9 @@ const generatePenileQuote = () =>
                     !adjectives.includes(noun) &&
                     !adverbs.includes(noun) &&
                     !rest.includes(noun) &&
-                    noun.toLowerCase() !== "us"
+                    noun.toLowerCase() !== "us" &&
+                    noun.toLowerCase() !== "someone" &&
+                    noun.toLowerCase() !== "anyone"
                 );
                 resolve(verifiedNouns);
               } catch (err) {
@@ -267,17 +269,21 @@ export const generatePenileQuoteImage = () =>
   new Promise((resolve, reject) => {
     (async () => {
       try {
-        await fs.mkdir("tmp");
-        console.log("Initilized tmp folder");
+        if (!fs.existsSync(path.join(__dirname, "tmp"))) {
+          await fs.mkdir(path.join(__dirname, "tmp"));
+          console.log("Initilized tmp folder");
+        }
 
         let penileQuote;
         let originalQuote;
         let outputPath;
+        let author;
         let success = false;
         do {
           const obj1 = await generatePenileQuote();
           penileQuote = obj1.penileQuote;
           originalQuote = obj1.originalQuote;
+          author = obj1.author;
           const obj2 = await createImage(penileQuote);
           outputPath = obj2.outputPath;
           success = obj2.success;
@@ -285,7 +291,7 @@ export const generatePenileQuoteImage = () =>
 
         await new Quote({ quote: originalQuote }).save();
         console.log("Doc added to DB");
-        resolve();
+        resolve({ outputPath, author });
       } catch (err) {
         await fs.remove("tmp");
         reject(err);
