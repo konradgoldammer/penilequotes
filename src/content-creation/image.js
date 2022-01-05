@@ -1,5 +1,5 @@
 import axios from "axios";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import Jimp from "jimp";
 import path from "path";
 import pluralize from "pluralize";
@@ -114,7 +114,7 @@ const createImage = (text) =>
           return reject(new Error("Text must be string"));
         }
 
-        const outputPath = "output/edited.jpg";
+        const outputPath = path.join(__dirname, "tmp", "image.jpg");
 
         const bg = await Jimp.read(path.join(__dirname, "images", "bg.jpg"));
         const logo = await Jimp.read(
@@ -263,6 +263,9 @@ export const generatePenileQuoteImage = () =>
   new Promise((resolve, reject) => {
     (async () => {
       try {
+        await fs.mkdir("tmp");
+        console.log("Initilized tmp folder");
+
         let penileQuote;
         let outputPath;
         let success = false;
@@ -274,6 +277,7 @@ export const generatePenileQuoteImage = () =>
           success = obj2.success;
         } while (!success);
       } catch (err) {
+        await fs.remove("tmp");
         console.error(err);
       }
     })();
