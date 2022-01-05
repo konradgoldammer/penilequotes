@@ -168,7 +168,27 @@ const createImage = (text) =>
 
 (async function () {
   try {
-    const wordpos = new WordPOS();
+    const identifyNouns = (string) =>
+      new Promise((resolve, reject) => {
+        (async () => {
+          try {
+            const wordpos = new WordPOS();
+            const { nouns, verbs, adjectives, adverbs, rest } =
+              await wordpos.getPOS(string);
+            const verifiedNouns = nouns.filter(
+              (noun) =>
+                !verbs.includes(noun) &&
+                !adjectives.includes(noun) &&
+                !adverbs.includes(noun) &&
+                !rest.includes(noun)
+            );
+            console.log(nouns, verbs, adjectives, adverbs, rest);
+            resolve(verifiedNouns);
+          } catch (err) {
+            reject(err);
+          }
+        })();
+      });
 
     // Get qoute
     let quoteArr;
@@ -179,7 +199,8 @@ const createImage = (text) =>
       quoteArr = (await getQuote()).split(/\r\n|\r|\n/);
       quote = quoteArr[0].replaceAll('"', "");
       author = quoteArr[1];
-      nouns = await wordpos.getNouns(quote);
+      nouns = await identifyNouns(quote);
+      console.log(nouns.length, quote);
     } while (!isValidQuote(quote, nouns));
 
     const lastNoun = nouns[nouns.length - 1];
