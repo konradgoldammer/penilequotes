@@ -3,6 +3,7 @@ import fs from "fs-extra";
 import Jimp from "jimp";
 import path from "path";
 import pluralize from "pluralize";
+import { Quote } from "../models/Quote.js";
 import WordPOS from "wordpos";
 
 const __dirname = path.resolve();
@@ -24,7 +25,7 @@ const generatePenileQuote = () =>
                     !adjectives.includes(noun) &&
                     !adverbs.includes(noun) &&
                     !rest.includes(noun) &&
-                    !noun.toLowerCase() !== "us"
+                    noun.toLowerCase() !== "us"
                 );
                 resolve(verifiedNouns);
               } catch (err) {
@@ -33,12 +34,13 @@ const generatePenileQuote = () =>
             })();
           });
 
-        const isValidQuote = (quote, nouns) => {
+        const isValidQuote = (quote, nouns, doc) => {
+          const alreadyUsed = Boolean(doc);
           const wordpos = new WordPOS();
           const includesNoun = nouns.length > 0;
           const includesForbiddenChars =
             quote.includes("~") || quote.includes('"');
-          return includesNoun && !includesForbiddenChars;
+          return includesNoun && !includesForbiddenChars && !alreadyUsed;
         };
 
         const getQuote = () =>
@@ -66,6 +68,7 @@ const generatePenileQuote = () =>
         let quote;
         let author;
         let nouns;
+        let doc;
         let i = 0;
         do {
           if (i > 20) {
@@ -75,6 +78,7 @@ const generatePenileQuote = () =>
           quote = quoteArr[0].replaceAll('"', "");
           author = quoteArr[1];
           nouns = await identifyNouns(quote);
+          doc = await Quote.findOne({ quote });
           console.log(
             `Fetched quote (nouns: ${nouns.length}, quote: ${quote})`
           );
@@ -267,18 +271,24 @@ export const generatePenileQuoteImage = () =>
         console.log("Initilized tmp folder");
 
         let penileQuote;
+        let originalQuote;
         let outputPath;
         let success = false;
         do {
           const obj1 = await generatePenileQuote();
           penileQuote = obj1.penileQuote;
+          originalQuote = obj1.originalQuote;
           const obj2 = await createImage(penileQuote);
           outputPath = obj2.outputPath;
           success = obj2.success;
         } while (!success);
+
+        await new Quote({ quote: originalQuote }).save();
+        console.log("Doc added to DB");
+        resolve();
       } catch (err) {
         await fs.remove("tmp");
-        console.error(err);
+        reject(err);
       }
     })();
   });
