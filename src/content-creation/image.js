@@ -8,6 +8,13 @@ import WordPOS from "wordpos";
 
 const __dirname = path.resolve();
 
+const replaceAll = (str, find, replace) => {
+  const escapeRegExp = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  };
+  return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
+};
+
 const generatePenileQuote = () =>
   new Promise((resolve, reject) => {
     (async () => {
@@ -77,7 +84,7 @@ const generatePenileQuote = () =>
             throw new Error("Last 20 fetched quotes were not valid");
           }
           quoteArr = (await getQuote()).split(/\r\n|\r|\n/);
-          quote = quoteArr[0].replaceAll('"', "");
+          quote = replaceAll(quoteArr[0], '"', "");
           author = quoteArr[1];
           nouns = await identifyNouns(quote);
           doc = await Quote.findOne({ quote });
@@ -90,7 +97,8 @@ const generatePenileQuote = () =>
         const lastNoun = nouns[nouns.length - 1];
 
         // Replace last noun with penis lmao
-        const penileQuote = quote.replaceAll(
+        const penileQuote = replaceAll(
+          quote,
           lastNoun,
           lastNoun.split("")[0] === lastNoun.split("")[0].toLowerCase()
             ? "penis"
