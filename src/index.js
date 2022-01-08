@@ -30,7 +30,7 @@ import mongoose from "mongoose";
 
       await client.uploadPhoto({
         photo: outputPath,
-        caption: `- ${author}`,
+        caption: `${author}`,
         post: "feed",
       });
 
