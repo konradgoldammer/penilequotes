@@ -15,6 +15,10 @@ const replaceAll = (str, find, replace) => {
   return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
 };
 
+const capitalizeFirstLetter = (string) => {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
 const generatePenileQuote = () =>
   new Promise((resolve, reject) => {
     (async () => {
@@ -94,15 +98,14 @@ const generatePenileQuote = () =>
           i++;
         } while (!isValidQuote(quote, nouns));
 
-        const lastNoun = nouns[nouns.length - 1];
+        const lastNoun = nouns[nouns.length - 1].toLowerCase();
 
         // Replace last noun with penis lmao
-        const penileQuote = replaceAll(
-          quote,
-          lastNoun,
-          lastNoun.split("")[0] === lastNoun.split("")[0].toLowerCase()
-            ? "penis"
-            : "Penis"
+        let penileQuote = replaceAll(quote, lastNoun, "penis");
+        let penileQuote = replaceAll(
+          penileQuote,
+          capitalizeFirstLetter(lastNoun),
+          "Penis"
         );
 
         console.log(
