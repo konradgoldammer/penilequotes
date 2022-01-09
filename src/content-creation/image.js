@@ -102,7 +102,7 @@ const generatePenileQuote = () =>
 
         // Replace last noun with penis lmao
         let penileQuote = replaceAll(quote, lastNoun, "penis");
-        let penileQuote = replaceAll(
+        penileQuote = replaceAll(
           penileQuote,
           capitalizeFirstLetter(lastNoun),
           "Penis"
