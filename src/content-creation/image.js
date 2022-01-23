@@ -39,7 +39,8 @@ const generatePenileQuote = () =>
                     noun.toLowerCase() !== "us" &&
                     noun.toLowerCase() !== "someone" &&
                     noun.toLowerCase() !== "anyone" &&
-                    noun.toLowerCase() !== "may"
+                    noun.toLowerCase() !== "may" &&
+                    noun.toLowerCase() !== "why"
                 );
                 resolve(verifiedNouns);
               } catch (err) {
