@@ -39,6 +39,8 @@ import { Quote } from "./models/Quote.js";
     }
 
     while (true) {
+      console.log("New iteration...");
+
       const startTime = Date.now();
 
       const { outputPath, author } = await generatePenileQuoteImage();
