@@ -25,7 +25,7 @@ import { Quote } from "./models/Quote.js";
     console.log("Connected to MongoDB");
 
     // Get latest post to check when to post new
-    const latestQuote = Quote.findOne({}, {}, { sort: { date: -1 } });
+    const latestQuote = await Quote.findOne({}, {}, { sort: { date: -1 } });
 
     if (latestQuote) {
       const millisUntilNextQuote =
