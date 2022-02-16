@@ -34,6 +34,11 @@ import { Quote } from "./models/Quote.js";
         Date.now();
 
       if (millisUntilNextQuote >= 0) {
+        console.log(
+          `Sleeping for next quote @ ${new Date(
+            Date.now() + millisUntilNextQuote
+          ).toLocaleString()}`
+        );
         await sleep(millisUntilNextQuote);
       }
     }
