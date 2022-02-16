@@ -2,29 +2,44 @@ import config from "config";
 import { generatePenileQuoteImage } from "./content-creation/index.js";
 import Instagram from "instagram-web-api";
 import mongoose from "mongoose";
+import { Quote } from "./models/Quote.js";
 
 (async () => {
   try {
+    console.log("Start...");
+
+    const client = new Instagram({
+      username: config.get("username"),
+      password: config.get("password"),
+    });
+
+    const authenticated = await client.login();
+
+    if (!authenticated) {
+      throw new Error("False credentials");
+    }
+
+    console.log(`Logged into Instagram as ${client.credentials.username}`);
+
+    await mongoose.connect(config.get("mongoURI"));
+    console.log("Connected to MongoDB");
+
+    // Get latest post to check when to post new
+    const latestQuote = Quote.findOne({}, {}, { sort: { date: -1 } });
+
+    if (latestQuote) {
+      const millisUntilNextQuote =
+        latestQuote.date.getTime() +
+        config.get("intervalLength") * 60 * 60 * 1000 -
+        Date.now();
+
+      if (millisUntilNextQuote <= 0) {
+        await sleep(millisUntilNextQuote);
+      }
+    }
+
     while (true) {
       const startTime = Date.now();
-
-      console.log("Start...");
-
-      const client = new Instagram({
-        username: config.get("username"),
-        password: config.get("password"),
-      });
-
-      const authenticated = await client.login();
-
-      if (!authenticated) {
-        throw new Error("False credentials");
-      }
-
-      console.log(`Logged into Instagram as ${client.credentials.username}`);
-
-      await mongoose.connect(config.get("mongoURI"));
-      console.log("Connected to MongoDB");
 
       const { outputPath, author } = await generatePenileQuoteImage();
 
