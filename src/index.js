@@ -33,7 +33,7 @@ import { Quote } from "./models/Quote.js";
         config.get("intervalLength") * 60 * 60 * 1000 -
         Date.now();
 
-      if (millisUntilNextQuote <= 0) {
+      if (millisUntilNextQuote >= 0) {
         await sleep(millisUntilNextQuote);
       }
     }
