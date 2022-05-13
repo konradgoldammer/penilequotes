@@ -50,9 +50,12 @@ import { Quote } from "./models/Quote.js";
 
       const { outputPath, author } = await generatePenileQuoteImage();
 
+      const hashtags =
+        "#spreadpositivity #motivationoftheday #positivityiskey #mindsetmatters #inspiration #inspirationalquotes #keytosuccess #mindsetcoach #inspirational #mindsetshift #mindsetiseverything #successtips #moneymindset #motivationalquotesoftheday #motivationalquotes #inspirationalquote #inspirations #motivation101 #successmindset #successquotes #morningmotivation #quoteoftheday #motivation #inspiration";
+
       await client.uploadPhoto({
         photo: outputPath,
-        caption: `${author}`,
+        caption: `${author}\n\n${hashtags}`,
         post: "feed",
       });
 
