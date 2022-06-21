@@ -4,6 +4,10 @@ import Instagram from "instagram-web-api";
 import mongoose from "mongoose";
 import { Quote } from "./models/Quote.js";
 
+const sleep = (milliseconds) => {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+};
+
 (async () => {
   try {
     console.log("Start...");
@@ -13,7 +17,10 @@ import { Quote } from "./models/Quote.js";
       password: config.get("password"),
     });
 
-    const authenticated = await client.login();
+    const authenticated = await client.login(
+      { username: config.get("username"), password: config.get("password") },
+      { _sharedData: false }
+    );
 
     if (!authenticated) {
       throw new Error("False credentials");
@@ -89,7 +96,3 @@ import { Quote } from "./models/Quote.js";
     return;
   }
 })();
-
-const sleep = (milliseconds) => {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
-};
